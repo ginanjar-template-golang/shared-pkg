@@ -1,28 +1,51 @@
 package response
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/ginanjar-template-golang/shared-pkg/errors"
+	"github.com/ginanjar-template-golang/shared-pkg/translator"
 )
 
-type Response struct {
-	Code    string      `json:"code"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+type SuccessResponse struct {
+	Meta MetaData `json:"meta_data"`
+	Data any      `json:"data"`
 }
 
-func Success(c *gin.Context, message string, data interface{}) {
-	c.JSON(http.StatusOK, Response{
-		Code:    "SUCCESS",
-		Message: message,
-		Data:    data,
-	})
+type ErrorResponse struct {
+	Meta   MetaData `json:"meta_data"`
+	Errors any      `json:"errors"`
 }
 
-func Error(c *gin.Context, code string, message string, statusCode int) {
-	c.JSON(statusCode, Response{
-		Code:    code,
-		Message: message,
-	})
+// Format sukses
+func NewSuccessResponse(requestID, code, lang string, results any) SuccessResponse {
+	message := translator.T(lang, code)
+	return SuccessResponse{
+		Meta: MetaData{
+			Status:    "success",
+			RequestID: requestID,
+			Code:      code,
+			Message:   message,
+		},
+		Data: results,
+	}
+}
+
+// Format error
+func NewErrorResponse(requestID string, err error, lang string) ErrorResponse {
+	appErr := errors.ParseError(err)
+	message := translator.T(lang, appErr.Code)
+	return ErrorResponse{
+		Meta: MetaData{
+			Status:    "error",
+			RequestID: requestID,
+			Code:      appErr.Code,
+			Message:   message,
+		},
+		Errors: appErr.Detail,
+	}
+}
+
+// Kirim JSON pakai gin.Context
+func WriteJSON(c *gin.Context, status int, payload any) {
+	c.JSON(status, payload)
 }

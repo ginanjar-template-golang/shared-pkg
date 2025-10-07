@@ -1,0 +1,6 @@
+{
+    "INTERNAL_SERVER_ERROR": "Internal server error",
+    "INVALID_REQUEST": "Invalid request",
+    "NOT_FOUND": "Resource not found",
+    "UNAUTHORIZED": "Unauthorized"
+}

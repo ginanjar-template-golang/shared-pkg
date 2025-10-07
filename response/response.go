@@ -1,51 +1,121 @@
 package response
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ginanjar-template-golang/shared-pkg/errors"
-	"github.com/ginanjar-template-golang/shared-pkg/translator"
+	"github.com/google/uuid"
 )
 
-type SuccessResponse struct {
-	Meta MetaData `json:"meta_data"`
-	Data any      `json:"data"`
+// MetaData standard response meta
+type MetaData struct {
+	RequestID string `json:"request_id"`
+	Code      int    `json:"code"`
+	Message   string `json:"message"`
 }
 
-type ErrorResponse struct {
-	Meta   MetaData `json:"meta_data"`
-	Errors any      `json:"errors"`
+// Standard response format
+type Response struct {
+	Meta MetaData `json:"meta"`
+	Data any      `json:"data,omitempty"`
 }
 
-// Format sukses
-func NewSuccessResponse(requestID, code, lang string, results any) SuccessResponse {
-	message := translator.T(lang, code)
-	return SuccessResponse{
+type ResponseError struct {
+	Meta  MetaData `json:"meta"`
+	Error any      `json:"error,omitempty"`
+}
+
+// Pagination response format
+type Pagination struct {
+	Page      int    `json:"page"`
+	Size      int    `json:"size"`
+	Limit     int    `json:"limit"`
+	TotalRow  int    `json:"total_row"`
+	Results   any    `json:"results"`
+	RequestID string `json:"request_id"`
+}
+
+// helper untuk auto-generate request_id jika belum ada
+func getRequestID(c *gin.Context) string {
+	reqID := c.GetString("request_id")
+	if reqID == "" {
+		reqID = uuid.NewString()
+		c.Set("request_id", reqID)
+	}
+	return reqID
+}
+
+// ========================
+// SUCCESS RESPONSES
+// ========================
+func Success(c *gin.Context, message string, data any) {
+	c.JSON(http.StatusOK, Response{
 		Meta: MetaData{
-			Status:    "success",
-			RequestID: requestID,
-			Code:      code,
+			RequestID: getRequestID(c),
+			Code:      http.StatusOK,
 			Message:   message,
 		},
-		Data: results,
-	}
+		Data: data,
+	})
 }
 
-// Format error
-func NewErrorResponse(requestID string, err error, lang string) ErrorResponse {
-	appErr := errors.ParseError(err)
-	message := translator.T(lang, appErr.Code)
-	return ErrorResponse{
+func Created(c *gin.Context, message string, data any) {
+	c.JSON(http.StatusCreated, Response{
 		Meta: MetaData{
-			Status:    "error",
-			RequestID: requestID,
-			Code:      appErr.Code,
+			RequestID: getRequestID(c),
+			Code:      http.StatusCreated,
 			Message:   message,
 		},
-		Errors: appErr.Detail,
-	}
+		Data: data,
+	})
 }
 
-// Kirim JSON pakai gin.Context
-func WriteJSON(c *gin.Context, status int, payload any) {
-	c.JSON(status, payload)
+func Updated(c *gin.Context, message string, data any) {
+	c.JSON(http.StatusOK, Response{
+		Meta: MetaData{
+			RequestID: getRequestID(c),
+			Code:      http.StatusOK,
+			Message:   message,
+		},
+		Data: data,
+	})
+}
+
+func Deleted(c *gin.Context, message string) {
+	c.JSON(http.StatusOK, Response{
+		Meta: MetaData{
+			RequestID: getRequestID(c),
+			Code:      http.StatusOK,
+			Message:   message,
+		},
+	})
+}
+
+// ========================
+// PAGINATION RESPONSE
+// ========================
+func PaginationResponse(c *gin.Context, page, size, totalRow int, results any) {
+	c.JSON(http.StatusOK, Pagination{
+		Page:      page,
+		Size:      size,
+		Limit:     size,
+		TotalRow:  totalRow,
+		Results:   results,
+		RequestID: getRequestID(c),
+	})
+}
+
+// ========================
+// ERROR RESPONSE
+// ========================
+func FromInternalError(c *gin.Context, err errors.InternalError) {
+	c.JSON(err.Code, ResponseError{
+		Meta: MetaData{
+			RequestID: getRequestID(c),
+			Code:      err.Code,
+			Message:   err.Message,
+		},
+		Error: err.Data,
+	})
 }

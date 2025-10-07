@@ -2,6 +2,6 @@ package utils
 
 import "github.com/google/uuid"
 
-func GenerateRequestID() string {
-	return uuid.New().String()
+func NewRequestID() string {
+	return uuid.NewString()
 }

@@ -1,0 +1,21 @@
+{
+	"notFoundResource": "Resource not found",
+	"errorFindResource": "Failed to find resource",
+	"errorCreateResource": "Failed to create resource",
+	"errorUpdateResource": "Failed to update resource",
+	"errorDeleteResource": "Failed to delete resource",
+	"invalidBody": "Invalid request body",
+	"incompleteKey": "Incomplete key",
+	"incompleteValue": "Incomplete value",
+	"invalidType": "Invalid type",
+	"invalidFormat": "Invalid format",
+	"alreadyUsed": "Value already used",
+	"invalidOption": "Invalid option",
+	"somethingWentWrong": "Something went wrong",
+	"unauthorized": "Unauthorized",
+	"forbidden": "Forbidden",
+	"loginError": "Invalid email or password",
+	"expired": "Expired",
+	"generalRequestErrors": "General error",
+	"invalidProcess": "Invalid process"
+}

@@ -1,22 +1,29 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/ginanjar-template-golang/shared-pkg/errors"
+	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
 	"github.com/ginanjar-template-golang/shared-pkg/utils"
 )
 
+func startLogger() {
+	logger.Init(logger.Config{
+		LogglyToken: "",
+		LogglyTag:   "service-shared-pkg",
+		Enabled:     false, // true = kirim ke Loggly, false = hanya print di console
+	})
+}
+
 func main() {
 	r := gin.Default()
 
+	startLogger()
+
 	// Middleware untuk set request_id dan translator sesuai header lang
 	r.Use(func(c *gin.Context) {
-		// set request_id
-		c.Set("request_id", "req-123456")
 
 		// baca header lang
 		lang := c.GetHeader("Accept-Language")
@@ -58,7 +65,15 @@ func main() {
 			"name": "john",
 		}
 
-		response.PaginationResponse(c, 1, 10, 100, users)
+		pagination := response.Pagination{
+			Page:     1,
+			Size:     10,
+			Limit:    10,
+			TotalRow: len(users),
+			Results:  users,
+		}
+
+		response.PaginationResponse(c, "success get users", pagination)
 	})
 
 	r.POST("/success-create", func(c *gin.Context) {
@@ -96,10 +111,7 @@ func main() {
 		t := c.MustGet("translator").(translator.Translator)
 		err := errors.ResourceNotFound(t, "user", "error test")
 
-		fmt.Println(err)
-
 		if err != (errors.InternalError{}) {
-			// langsung response ke client
 			response.FromInternalError(c, err)
 			return
 		}
@@ -107,6 +119,18 @@ func main() {
 		// kalau tidak error
 		response.Success(c, "Success get user", nil)
 	})
+
+	// Setelah itu tinggal pakai di mana pun:
+	logger.Info("User created successfully", map[string]interface{}{
+		"user_id": 42,
+		"email":   "test@example.com",
+	})
+
+	// logger.Error("Payment failed", map[string]interface{}{
+	// 	"request_id": "req-456",
+	// 	"amount":     150000,
+	// 	"error":      "timeout",
+	// })
 
 	r.Run(":8080")
 }

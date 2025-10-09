@@ -15,9 +15,17 @@ type JWTConfig struct {
 	SecretKey string
 }
 
-func AuthJWT(cfg JWTConfig, t translator.Translator) gin.HandlerFunc {
+func AuthJWT(cfg JWTConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
+
+		var t translator.Translator
+		if tr, exists := c.Get("translator"); exists {
+			t = tr.(translator.Translator)
+		} else {
+			t = translator.NewTranslator("./translator/messages/en.json")
+		}
+
 		if authHeader == "" {
 			logger.Warn("Missing Authorization header", map[string]any{
 				"path": c.Request.URL.Path,

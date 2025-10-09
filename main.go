@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
+	"github.com/ginanjar-template-golang/shared-pkg/middleware"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
 	"github.com/ginanjar-template-golang/shared-pkg/utils"
@@ -22,27 +23,9 @@ func main() {
 
 	startLogger()
 
-	// Middleware untuk set request_id dan translator sesuai header lang
-	r.Use(func(c *gin.Context) {
-
-		// baca header lang
-		lang := c.GetHeader("Accept-Language")
-		if lang == "" {
-			lang = "en"
-		}
-
-		// load translator sesuai lang
-		var t translator.Translator
-		switch lang {
-		case "id":
-			t = translator.NewTranslator("./translator/messages/id.json")
-		default:
-			t = translator.NewTranslator("./translator/messages/en.json")
-		}
-
-		c.Set("translator", t)
-		c.Next()
-	})
+	r.Use(middleware.Recovery())
+	r.Use(middleware.CORS())
+	r.Use(middleware.RequestLogger())
 
 	r.GET("/success-get", func(c *gin.Context) {
 		reqID := utils.NewRequestID()
@@ -118,6 +101,11 @@ func main() {
 
 		// kalau tidak error
 		response.Success(c, "Success get user", nil)
+	})
+
+	// Contoh endpoint error
+	r.GET("/panic", func(c *gin.Context) {
+		panic("unexpected error example")
 	})
 
 	// Setelah itu tinggal pakai di mana pun:

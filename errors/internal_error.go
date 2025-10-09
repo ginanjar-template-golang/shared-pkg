@@ -14,6 +14,11 @@ type InternalError struct {
 	Data    any    `json:"data,omitempty"`
 }
 
+// implementasi interface error
+func (e InternalError) Error() string {
+	return fmt.Sprintf("[%d] %s", e.Code, e.Message)
+}
+
 // ==========================
 // helper for auto-log
 // ==========================

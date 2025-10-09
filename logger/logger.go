@@ -35,7 +35,7 @@ var (
 func Init(c Config) {
 	once.Do(func() {
 		cfg = c
-		fmt.Println("✅ Logger initialized")
+		fmt.Println("Logger initialized")
 	})
 }
 

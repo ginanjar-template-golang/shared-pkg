@@ -14,14 +14,13 @@ func setTranslator(c *gin.Context) {
 	if lang == "" {
 		lang = "en"
 	}
-	var t translator.Translator
+
 	switch lang {
 	case "id":
-		t = translator.NewTranslator("./translator/messages/id.json")
+		translator.InitDefaultTranslator("id")
 	default:
-		t = translator.NewTranslator("./translator/messages/en.json")
+		translator.InitDefaultTranslator("en")
 	}
-	c.Set("translator", t)
 }
 
 func RequestLogger() gin.HandlerFunc {

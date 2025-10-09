@@ -2,15 +2,14 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/ginanjar-template-golang/shared-pkg/errors"
+	appError "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/middleware"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
-	"github.com/ginanjar-template-golang/shared-pkg/translator"
 	"github.com/ginanjar-template-golang/shared-pkg/utils"
 )
 
-func startLogger() {
+func configLogger() {
 	logger.Init(logger.Config{
 		LogglyToken: "",
 		LogglyTag:   "service-shared-pkg",
@@ -21,11 +20,11 @@ func startLogger() {
 func main() {
 	r := gin.Default()
 
-	startLogger()
+	configLogger()
 
-	r.Use(middleware.Recovery())
 	r.Use(middleware.CORS())
 	r.Use(middleware.RequestLogger())
+	r.Use(middleware.Recovery())
 
 	r.GET("/success-get", func(c *gin.Context) {
 		reqID := utils.NewRequestID()
@@ -91,16 +90,11 @@ func main() {
 	})
 
 	r.GET("/error", func(c *gin.Context) {
-		t := c.MustGet("translator").(translator.Translator)
-		err := errors.ResourceNotFound(t, "user", "error test")
-
-		if err != (errors.InternalError{}) {
-			response.FromInternalError(c, err)
-			return
-		}
+		appError.ResourceNotFound("user", "error test")
+		// return nil, err
 
 		// kalau tidak error
-		response.Success(c, "Success get user", nil)
+		// response.Success(c, "Success get user", nil)
 	})
 
 	// Contoh endpoint error
@@ -109,10 +103,10 @@ func main() {
 	})
 
 	// Setelah itu tinggal pakai di mana pun:
-	logger.Info("User created successfully", map[string]interface{}{
-		"user_id": 42,
-		"email":   "test@example.com",
-	})
+	// logger.Info("User created successfully", map[string]interface{}{
+	// 	"user_id": 42,
+	// 	"email":   "test@example.com",
+	// })
 
 	// logger.Error("Payment failed", map[string]interface{}{
 	// 	"request_id": "req-456",

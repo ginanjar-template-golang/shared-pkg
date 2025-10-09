@@ -163,14 +163,6 @@ func PaginationResponse(c *gin.Context, message string, data Pagination) {
 func FromInternalError(c *gin.Context, err errors.InternalError) {
 	reqID := getRequestID(c)
 
-	logger.Error(err.Message, map[string]any{
-		"request_id": reqID,
-		"status":     err.Code,
-		"method":     c.Request.Method,
-		"path":       c.FullPath(),
-		"error":      err.Data,
-	})
-
 	c.JSON(err.Code, ResponseError{
 		Meta: MetaData{
 			RequestID: reqID,

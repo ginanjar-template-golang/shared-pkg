@@ -1,14 +1,12 @@
 package middleware
 
 import (
-	"fmt"
 	"runtime/debug"
 
 	"github.com/gin-gonic/gin"
 	appErrors "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
-	"github.com/ginanjar-template-golang/shared-pkg/translator"
 	"github.com/google/uuid"
 )
 
@@ -23,73 +21,27 @@ func Recovery() gin.HandlerFunc {
 					c.Set("request_id", requestID)
 				}
 
-				var t translator.Translator
-				if tr, exists := c.Get("translator"); exists {
-					t = tr.(translator.Translator)
-				} else {
-					t = translator.NewTranslator("./translator/messages/en.json")
-				}
+				var internalErr appErrors.InternalError
 
-				switch err := rec.(type) {
-
-				// ==========================
-				// CASE 1: panic with InternalError
-				// ==========================
-				case appErrors.InternalError:
-					logger.Error("Recovered InternalError", map[string]any{
-						"request_id": requestID,
-						"code":       err.Code,
-						"message":    err.Message,
-						"data":       err.Data,
-						"path":       c.FullPath(),
-						"method":     c.Request.Method,
-					})
-					response.FromInternalError(c, err)
-					return
-
-				// ==========================
-				// CASE 2: panic with string
-				// ==========================
+				switch e := rec.(type) {
 				case string:
-					msg := fmt.Sprintf("Panic: %s", err)
-					logger.Error(msg, map[string]any{
-						"request_id": requestID,
-						"path":       c.FullPath(),
-						"method":     c.Request.Method,
-						"stack":      string(debug.Stack()),
-					})
-					internalErr := appErrors.UnknownError(t, "panic-string", err)
-					response.FromInternalError(c, internalErr)
-					return
-
-				// ==========================
-				// CASE 3: panic with general error
-				// ==========================
+					internalErr = appErrors.UnknownError("panic-string", e)
 				case error:
-					logger.Error(err.Error(), map[string]any{
-						"request_id": requestID,
-						"path":       c.FullPath(),
-						"method":     c.Request.Method,
-						"stack":      string(debug.Stack()),
-					})
-					internalErr := appErrors.UnknownError(t, "panic-error", err.Error())
-					response.FromInternalError(c, internalErr)
-					return
-
-				// ==========================
-				// CASE 4: unknown panic type
-				// ==========================
+					internalErr = appErrors.UnknownError("panic-error", e.Error())
 				default:
-					logger.Error("Unknown panic", map[string]any{
-						"request_id": requestID,
-						"path":       c.FullPath(),
-						"method":     c.Request.Method,
-						"stack":      string(debug.Stack()),
-					})
-					internalErr := appErrors.UnknownError(t, "panic-unknown", rec)
-					response.FromInternalError(c, internalErr)
-					return
+					internalErr = appErrors.UnknownError("panic-unknown", e)
 				}
+
+				logger.Error("Recovered panic", map[string]any{
+					"request_id": requestID,
+					"error":      internalErr.Message,
+					"code":       internalErr.Code,
+					"path":       c.FullPath(),
+					"method":     c.Request.Method,
+					"stack":      string(debug.Stack()),
+				})
+
+				response.FromInternalError(c, internalErr)
 			}
 		}()
 

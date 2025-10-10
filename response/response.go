@@ -160,15 +160,28 @@ func PaginationResponse(c *gin.Context, messageKey string, data Pagination) {
 // ========================
 // ERROR RESPONSE
 // ========================
-func FromInternalError(c *gin.Context, err errors.InternalError) {
+func FromInternalError(c *gin.Context, err error) {
 	reqID := getRequestID(c)
 
-	c.JSON(err.Code, ResponseError{
+	if internalErr, ok := err.(errors.InternalError); ok {
+		c.JSON(internalErr.Code, ResponseError{
+			Meta: MetaData{
+				RequestID: reqID,
+				Code:      internalErr.Code,
+				Message:   translator.GetMessageGlobal(internalErr.MessageKey),
+			},
+			Error: internalErr.Data,
+		})
+		return
+	}
+
+	// fallback
+	c.JSON(http.StatusInternalServerError, ResponseError{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      err.Code,
-			Message:   translator.GetMessageGlobal(err.MessageKey),
+			Code:      http.StatusInternalServerError,
+			Message:   "Unexpected error",
 		},
-		Error: err.Data,
+		Error: err.Error(),
 	})
 }

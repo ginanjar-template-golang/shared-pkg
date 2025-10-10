@@ -17,5 +17,6 @@
 	"loginError": "Invalid email or password",
 	"expired": "Expired",
 	"generalRequestErrors": "General error",
-	"invalidProcess": "Invalid process"
+	"invalidProcess": "Invalid process",
+	"invalidToken": "Invalid token"
 }

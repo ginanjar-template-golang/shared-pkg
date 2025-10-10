@@ -6,14 +6,13 @@ import (
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/middleware"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
-	"github.com/ginanjar-template-golang/shared-pkg/utils"
 )
 
 func configLogger() {
 	logger.Init(logger.Config{
 		LogglyToken: "",
 		LogglyTag:   "service-shared-pkg",
-		Enabled:     false, // true = kirim ke Loggly, false = hanya print di console
+		Enabled:     false,
 	})
 }
 
@@ -27,21 +26,15 @@ func main() {
 	r.Use(middleware.Recovery())
 
 	r.GET("/success-get", func(c *gin.Context) {
-		reqID := utils.NewRequestID()
-		c.Set("request_id", reqID)
-
 		user := map[string]any{
 			"id":   1,
 			"name": "john",
 		}
 
-		response.Success(c, "Success get data", map[string]any{"user": user})
+		response.Success(c, "successGet", map[string]any{"user": user})
 	})
 
 	r.GET("/success-pagination", func(c *gin.Context) {
-		reqID := utils.NewRequestID()
-		c.Set("request_id", reqID)
-
 		users := map[string]any{
 			"id":   1,
 			"name": "john",
@@ -55,64 +48,40 @@ func main() {
 			Results:  users,
 		}
 
-		response.PaginationResponse(c, "success get users", pagination)
+		response.PaginationResponse(c, "successGetPagination", pagination)
 	})
 
 	r.POST("/success-create", func(c *gin.Context) {
-		reqID := utils.NewRequestID()
-		c.Set("request_id", reqID)
-
 		user := map[string]any{
 			"id":   1,
 			"name": "john",
 		}
 
-		response.Created(c, "User created", user)
+		response.Created(c, "successCreate", user)
 	})
 
 	r.PATCH("/success-update", func(c *gin.Context) {
-		reqID := utils.NewRequestID()
-		c.Set("request_id", reqID)
-
 		user := map[string]any{
 			"id":   1,
 			"name": "john",
 		}
 
-		response.Updated(c, "User updated", user)
+		response.Updated(c, "successUpdate", user)
 	})
 
 	r.DELETE("/success-update", func(c *gin.Context) {
-		reqID := utils.NewRequestID()
-		c.Set("request_id", reqID)
-
-		response.Deleted(c, "User deleted")
+		response.Deleted(c, "successDelete")
 	})
 
 	r.GET("/error", func(c *gin.Context) {
-		appError.ResourceNotFound("user", "error test")
-		// return nil, err
-
-		// kalau tidak error
-		// response.Success(c, "Success get user", nil)
+		err := appError.ResourceNotFound("user", "error test")
+		response.FromInternalError(c, err)
 	})
 
 	// Contoh endpoint error
 	r.GET("/panic", func(c *gin.Context) {
 		panic("unexpected error example")
 	})
-
-	// Setelah itu tinggal pakai di mana pun:
-	// logger.Info("User created successfully", map[string]interface{}{
-	// 	"user_id": 42,
-	// 	"email":   "test@example.com",
-	// })
-
-	// logger.Error("Payment failed", map[string]interface{}{
-	// 	"request_id": "req-456",
-	// 	"amount":     150000,
-	// 	"error":      "timeout",
-	// })
 
 	r.Run(":8080")
 }

@@ -34,7 +34,7 @@ func Recovery() gin.HandlerFunc {
 
 				logger.Error("Recovered panic", map[string]any{
 					"request_id": requestID,
-					"error":      internalErr.Message,
+					"error":      internalErr.MessageKey,
 					"code":       internalErr.Code,
 					"path":       c.FullPath(),
 					"method":     c.Request.Method,

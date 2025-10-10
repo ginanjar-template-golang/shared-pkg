@@ -1,0 +1,7 @@
+{
+	"successGetPagination": "Successfully get data",
+	"successGet": "Successfully get data",
+	"successCreate": "Successfully create data",
+	"successUpdate": "Successfully update data",
+	"successDelete": "Successfully delete data"
+}

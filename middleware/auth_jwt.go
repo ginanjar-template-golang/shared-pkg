@@ -22,7 +22,8 @@ func AuthJWT(cfg JWTConfig) gin.HandlerFunc {
 			logger.Warn("Missing Authorization header", map[string]any{
 				"path": c.Request.URL.Path,
 			})
-			response.FromInternalError(c, errors.ValueMissMatch("Invalid Token", nil))
+
+			response.FromInternalError(c, errors.ValueMissMatch("Missing Authorization header", nil))
 			c.Abort()
 			return
 		}
@@ -37,7 +38,8 @@ func AuthJWT(cfg JWTConfig) gin.HandlerFunc {
 				"error": err,
 				"path":  c.Request.URL.Path,
 			})
-			response.FromInternalError(c, errors.ValueMissMatch("Invalid Token", nil))
+
+			response.FromInternalError(c, errors.InvalidTokenError("Token", err))
 			c.Abort()
 			return
 		}

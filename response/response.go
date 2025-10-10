@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/ginanjar-template-golang/shared-pkg/constants"
 	"github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
+	"github.com/ginanjar-template-golang/shared-pkg/translator"
+	"github.com/ginanjar-template-golang/shared-pkg/utils"
 )
 
 // MetaData standard response meta
@@ -42,7 +43,7 @@ type Pagination struct {
 func getRequestID(c *gin.Context) string {
 	reqID := c.GetString("request_id")
 	if reqID == "" {
-		reqID = uuid.NewString()
+		reqID = utils.NewRequestID()
 		c.Set("request_id", reqID)
 	}
 	return reqID
@@ -51,11 +52,10 @@ func getRequestID(c *gin.Context) string {
 // ========================
 // SUCCESS RESPONSES
 // ========================
-func Success(c *gin.Context, message string, data any) {
+func Success(c *gin.Context, messageKey string, data any) {
 	reqID := getRequestID(c)
 
-	// log otomatis
-	logger.Info(message, map[string]any{
+	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
 		"status":     http.StatusOK,
 		"method":     c.Request.Method,
@@ -66,16 +66,16 @@ func Success(c *gin.Context, message string, data any) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      constants.SuccessOK,
-			Message:   message,
+			Message:   translator.GetMessageGlobal(messageKey),
 		},
 		Data: data,
 	})
 }
 
-func Created(c *gin.Context, message string, data any) {
+func Created(c *gin.Context, messageKey string, data any) {
 	reqID := getRequestID(c)
 
-	logger.Info(message, map[string]any{
+	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
 		"status":     http.StatusCreated,
 		"method":     c.Request.Method,
@@ -86,16 +86,16 @@ func Created(c *gin.Context, message string, data any) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      constants.SuccessCreated,
-			Message:   message,
+			Message:   translator.GetMessageGlobal(messageKey),
 		},
 		Data: data,
 	})
 }
 
-func Updated(c *gin.Context, message string, data any) {
+func Updated(c *gin.Context, messageKey string, data any) {
 	reqID := getRequestID(c)
 
-	logger.Info(message, map[string]any{
+	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
 		"status":     http.StatusOK,
 		"method":     c.Request.Method,
@@ -106,16 +106,16 @@ func Updated(c *gin.Context, message string, data any) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      constants.SuccessOK,
-			Message:   message,
+			Message:   translator.GetMessageGlobal(messageKey),
 		},
 		Data: data,
 	})
 }
 
-func Deleted(c *gin.Context, message string) {
+func Deleted(c *gin.Context, messageKey string) {
 	reqID := getRequestID(c)
 
-	logger.Info(message, map[string]any{
+	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
 		"status":     http.StatusOK,
 		"method":     c.Request.Method,
@@ -126,7 +126,7 @@ func Deleted(c *gin.Context, message string) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      constants.SuccessOK,
-			Message:   message,
+			Message:   translator.GetMessageGlobal(messageKey),
 		},
 	})
 }
@@ -134,10 +134,10 @@ func Deleted(c *gin.Context, message string) {
 // ========================
 // PAGINATION RESPONSE
 // ========================
-func PaginationResponse(c *gin.Context, message string, data Pagination) {
+func PaginationResponse(c *gin.Context, messageKey string, data Pagination) {
 	reqID := getRequestID(c)
 
-	logger.Info(message, map[string]any{
+	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
 		"page":       data.Page,
 		"limit":      data.Limit,
@@ -151,7 +151,7 @@ func PaginationResponse(c *gin.Context, message string, data Pagination) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      constants.SuccessOK,
-			Message:   message,
+			Message:   translator.GetMessageGlobal(messageKey),
 		},
 		Data: data,
 	})
@@ -167,7 +167,7 @@ func FromInternalError(c *gin.Context, err errors.InternalError) {
 		Meta: MetaData{
 			RequestID: reqID,
 			Code:      err.Code,
-			Message:   err.Message,
+			Message:   translator.GetMessageGlobal(err.MessageKey),
 		},
 		Error: err.Data,
 	})

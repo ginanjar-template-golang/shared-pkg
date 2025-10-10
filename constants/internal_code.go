@@ -17,4 +17,5 @@ const (
 	InvalidAuth          = 1013
 	ExpiredAuth          = 1014
 	GeneralErrors        = 1015
+	InvalidToken         = 1016
 )

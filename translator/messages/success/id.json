@@ -1,0 +1,7 @@
+{
+	"successGetPagination": "Berhasil mendapatkan data",
+	"successGet": "Berhasil mendapatkan data",
+	"successCreate": "Berhasil membuat data",
+	"successUpdate": "Berhasil memperbarui data",
+	"successDelete": "Berhasil menghapus data"
+}

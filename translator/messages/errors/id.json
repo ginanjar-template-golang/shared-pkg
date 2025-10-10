@@ -17,5 +17,6 @@
 	"loginError": "Email atau password salah",
 	"expired": "Kedaluwarsa",
 	"generalRequestErrors": "Kesalahan umum",
-	"invalidProcess": "Proses tidak valid"
+	"invalidProcess": "Proses tidak valid",
+	"invalidToken": "Token tidak valid"
 }

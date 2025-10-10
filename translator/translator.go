@@ -1,40 +1,115 @@
 package translator
 
 import (
+	_ "embed"
 	"encoding/json"
 	"fmt"
-	"os"
+	"strings"
+	"sync"
 )
 
 type Translator struct {
 	messages map[string]string
 }
 
-// Load translation file
-func NewTranslator(filePath string) *Translator {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		panic(fmt.Sprintf("translator file not found: %s", filePath))
+var (
+	// Global default translator (English)
+	globalTranslator *Translator
+	mu               sync.RWMutex
+)
+
+// ================== Embed JSON files ==================
+
+// Errors
+//
+//go:embed messages/errors/en.json
+var enErrorsJSON []byte
+
+//go:embed messages/errors/id.json
+var idErrorsJSON []byte
+
+// Success
+//
+//go:embed messages/success/en.json
+var enSuccessJSON []byte
+
+//go:embed messages/success/id.json
+var idSuccessJSON []byte
+
+// ================== Helper Functions ==================
+
+// newTranslatorFromBytes membuat Translator dari JSON bytes
+func newTranslatorFromBytes(bytesList ...[]byte) *Translator {
+	messages := make(map[string]string)
+	for _, b := range bytesList {
+		var tmp map[string]string
+		if err := json.Unmarshal(b, &tmp); err != nil {
+			fmt.Printf("[translator] failed to unmarshal JSON: %v\n", err)
+			continue
+		}
+		for k, v := range tmp {
+			messages[k] = v
+		}
 	}
-	var msg map[string]string
-	json.Unmarshal(data, &msg)
-	return &Translator{messages: msg}
+	return &Translator{messages: messages}
 }
 
-func NewTranslatorFromBytes(data []byte) *Translator {
-	var msg map[string]string
-	if err := json.Unmarshal(data, &msg); err != nil {
-		panic(fmt.Sprintf("failed to unmarshal translator json: %v", err))
+// newTranslator load semua messages untuk satu bahasa
+func newTranslator(lang string) *Translator {
+	switch strings.ToLower(lang) {
+	case "id", "id-id":
+		return newTranslatorFromBytes(idErrorsJSON, idSuccessJSON)
+	default:
+		return newTranslatorFromBytes(enErrorsJSON, enSuccessJSON)
 	}
-	return &Translator{messages: msg}
 }
 
-func (t *Translator) T(key string) string {
-	if t == nil {
-		return key
+// ================== Public API ==================
+
+// InitGlobalTranslator set default global translator
+func InitGlobalTranslator(lang string) {
+	t := newTranslator(lang)
+	mu.Lock()
+	defer mu.Unlock()
+	globalTranslator = t
+	fmt.Printf("[translator] global translator initialized with lang=%s\n", lang)
+}
+
+// GetGlobalTranslator thread-safe, fallback English
+func GetGlobalTranslator() *Translator {
+	mu.RLock()
+	defer mu.RUnlock()
+	if globalTranslator == nil {
+		// fallback default English
+		t := newTranslator("en")
+		mu.RUnlock()
+		mu.Lock()
+		globalTranslator = t
+		mu.Unlock()
+		mu.RLock()
+		fmt.Println("[translator] global translator not set, initialized default English")
 	}
-	if val, ok := t.messages[key]; ok {
-		return val
+	return globalTranslator
+}
+
+// GetMessageGlobal ambil message dari global translator
+func GetMessageGlobal(key string) string {
+	t := GetGlobalTranslator()
+	if msg, ok := t.messages[key]; ok {
+		return msg
+	}
+	return key
+}
+
+// GetMessageByLang ambil message sesuai bahasa (per request)
+func GetMessageByLang(key string, lang ...string) string {
+	selectedLang := "en"
+	if len(lang) > 0 && lang[0] != "" {
+		selectedLang = lang[0]
+	}
+	t := newTranslator(selectedLang)
+	if msg, ok := t.messages[key]; ok {
+		return msg
 	}
 	return key
 }

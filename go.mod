@@ -7,6 +7,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/google/uuid v1.6.0
 	go.uber.org/zap v1.27.0
+	gorm.io/gorm v1.31.0
 )
 
 require (
@@ -44,5 +45,4 @@ require (
 	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
-	gorm.io/gorm v1.31.0 // indirect
 )

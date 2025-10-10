@@ -42,6 +42,7 @@ func Recovery() gin.HandlerFunc {
 				})
 
 				response.FromInternalError(c, internalErr)
+				c.Abort()
 			}
 		}()
 

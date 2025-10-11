@@ -6,163 +6,220 @@ import (
 	"github.com/ginanjar-template-golang/shared-pkg/constants"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
+	"github.com/ginanjar-template-golang/shared-pkg/utils"
 )
 
-type InternalError struct {
+type AppError struct {
 	Code       int    `json:"code"`
 	MessageKey string `json:"message_key"`
 	Data       any    `json:"data,omitempty"`
 }
 
-// implementasi interface error
-func (e InternalError) Error() string {
+func (e AppError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Code, e.MessageKey)
 }
 
-// ==========================
-// helper for auto-log
-// ==========================
-func logError(code int, msg string, data any) {
-	logger.Error(msg, map[string]any{
-		"code": code,
-		"data": data,
-	})
+// ===============================================
+// LOG HELPER (LEVEL AWARE)
+// ===============================================
+func logWithLevel(level string, internalCode int, msg string, data any, err ...error) {
+	fields := map[string]any{
+		"request_id":    utils.GetRequestID(),
+		"internal_code": internalCode,
+		"data":          data,
+	}
+
+	switch level {
+	case "debug":
+		logger.Debug(msg, fields, err...)
+	case "info":
+		logger.Info(msg, fields)
+	case "warn":
+		logger.Warn(msg, fields, err...)
+	default:
+		logger.Error(msg, fields, err...)
+	}
 }
 
-// ==========================
-// INTERNAL ERRORS
-// ==========================
-func ResourceNotFound(key string, data any) InternalError {
+// ===============================================
+// RESOURCE ERRORS
+// ===============================================
+func ResourceNotFound(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("notFoundResource"), key)
-	logError(constants.NotFound, msg, data)
-	return InternalError{Code: constants.NotFound, MessageKey: "notFoundResource", Data: data}
+	logWithLevel("warn", constants.ResourceNotFound, msg, data)
+	return AppError{Code: constants.NotFound, MessageKey: "notFoundResource", Data: data}
 }
 
-func FindResourceError(key string, data any) InternalError {
+func FindResourceError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("errorFindResource"), key)
-	logError(constants.FailedFindResource, msg, data)
-	return InternalError{Code: constants.FailedFindResource, MessageKey: "errorFindResource", Data: data}
+	logWithLevel("error", constants.FailedFindResource, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "errorFindResource", Data: data}
 }
 
-func CreateResourceError(key string, data any) InternalError {
+func CreateResourceError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("errorCreateResource"), key)
-	logError(constants.FailedCreateResource, msg, data)
-	return InternalError{Code: constants.FailedCreateResource, MessageKey: "errorCreateResource", Data: data}
+	logWithLevel("error", constants.FailedCreateResource, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "errorCreateResource", Data: data}
 }
 
-func UpdateResourceError(key string, data any) InternalError {
+func UpdateResourceError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("errorUpdateResource"), key)
-	logError(constants.FailedUpdateResource, msg, data)
-	return InternalError{Code: constants.FailedUpdateResource, MessageKey: "errorUpdateResource", Data: data}
+	logWithLevel("error", constants.FailedUpdateResource, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "errorUpdateResource", Data: data}
 }
 
-func DeleteResourceError(key string, data any) InternalError {
+func DeleteResourceError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("errorDeleteResource"), key)
-	logError(constants.FailedDeleteResource, msg, data)
-	return InternalError{Code: constants.FailedDeleteResource, MessageKey: "errorDeleteResource", Data: data}
+	logWithLevel("error", constants.FailedDeleteResource, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "errorDeleteResource", Data: data}
 }
 
-// ==========================
-// VALIDATION ERRORS
-// ==========================
-func InvalidBody(key string, data any) InternalError {
+// ===============================================
+// VALIDATION & REQUEST ERRORS
+// ===============================================
+func InvalidBody(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidBody"), key)
-	logError(constants.BadRequest, msg, data)
-	return InternalError{Code: constants.BadRequest, MessageKey: "invalidBody", Data: data}
+	logWithLevel("warn", constants.InvalidRequestData, msg, data)
+	return AppError{Code: constants.BadRequest, MessageKey: "invalidBody", Data: data}
 }
 
-func InvalidTypeError(key string, data any) InternalError {
+func InvalidTypeError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidType"), key)
-	logError(constants.BadRequestType, msg, data)
-	return InternalError{Code: constants.BadRequestType, MessageKey: "invalidType", Data: data}
+	logWithLevel("warn", constants.ValidationError, msg, data)
+	return AppError{Code: constants.BadRequest, MessageKey: "invalidType", Data: data}
 }
 
-func InvalidFormatError(key string, data any) InternalError {
+func InvalidFormatError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidFormat"), key)
-	logError(constants.BadRequestFormat, msg, data)
-	return InternalError{Code: constants.BadRequestFormat, MessageKey: "invalidFormat", Data: data}
+	logWithLevel("warn", constants.ValidationError, msg, data)
+	return AppError{Code: constants.BadRequest, MessageKey: "invalidFormat", Data: data}
 }
 
-func InCompleteKeyError(key string, data any) InternalError {
-	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("incompleteKey"), key)
-	logError(constants.BadRequestKey, msg, data)
-	return InternalError{Code: constants.BadRequestKey, MessageKey: "incompleteKey", Data: data}
-}
-
-func InCompleteValueError(key string, data any) InternalError {
-	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("incompleteValue"), key)
-	logError(constants.BadRequestValue, msg, data)
-	return InternalError{Code: constants.BadRequestValue, MessageKey: "incompleteValue", Data: data}
-}
-
-func AlreadyUsedError(key string, data any) InternalError {
+func AlreadyUsedError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("alreadyUsed"), key)
-	logError(constants.DuplicateValue, msg, data)
-	return InternalError{Code: constants.DuplicateValue, MessageKey: "alreadyUsed", Data: data}
+	logWithLevel("info", constants.DuplicateValue, msg, data)
+	return AppError{Code: constants.Conflict, MessageKey: "alreadyUsed", Data: data}
 }
 
-func InvalidOptionError(key string, data any) InternalError {
+func InvalidOptionError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidOption"), key)
-	logError(constants.OutsideOption, msg, data)
-	return InternalError{Code: constants.OutsideOption, MessageKey: "invalidOption", Data: data}
+	logWithLevel("warn", constants.OperationFailed, msg, data)
+	return AppError{Code: constants.BadRequest, MessageKey: "invalidOption", Data: data}
 }
 
-func ValueMissMatch(key string, data any) InternalError {
-	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("somethingWentWrong"), key)
-	logError(constants.ValueMissMatch, msg, data)
-	return InternalError{Code: constants.ValueMissMatch, MessageKey: "somethingWentWrong", Data: data}
+func ValueMissMatch(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("valueMismatch"), key)
+	logWithLevel("warn", constants.OperationFailed, msg, data)
+	return AppError{Code: constants.UnprocessableEntity, MessageKey: "valueMismatch", Data: data}
 }
 
-// ==========================
-// AUTH ERRORS
-// ==========================
-func Unauthorized(data any) InternalError {
+// ===============================================
+// AUTHENTICATION & AUTHORIZATION
+// ===============================================
+func Unauthorized(data any) AppError {
 	msg := translator.GetMessageByLang("unauthorized")
-	logError(constants.Unauthorized, msg, data)
-	return InternalError{Code: constants.Unauthorized, MessageKey: "unauthorized", Data: data}
+	logWithLevel("warn", constants.AuthInvalidCredentials, msg, data)
+	return AppError{Code: constants.Unauthorized, MessageKey: "unauthorized", Data: data}
 }
 
-func Forbidden(data any) InternalError {
+func Forbidden(data any) AppError {
 	msg := translator.GetMessageByLang("forbidden")
-	logError(constants.Forbidden, msg, data)
-	return InternalError{Code: constants.Forbidden, MessageKey: "forbidden", Data: data}
+	logWithLevel("warn", constants.AuthPermissionDenied, msg, data)
+	return AppError{Code: constants.Forbidden, MessageKey: "forbidden", Data: data}
 }
 
-func LoginError(data any) InternalError {
-	msg := translator.GetMessageByLang("loginError")
-	logError(constants.InvalidAuth, msg, data)
-	return InternalError{Code: constants.InvalidAuth, MessageKey: "loginError", Data: data}
-}
-
-func ExpiredError(key string, data any) InternalError {
-	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("expired"), key)
-	logError(constants.ExpiredAuth, msg, data)
-	return InternalError{Code: constants.ExpiredAuth, MessageKey: "expired", Data: data}
-}
-
-func InvalidTokenError(key string, data any) InternalError {
+func InvalidTokenError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidToken"), key)
-	logError(constants.InvalidToken, msg, data)
-	return InternalError{Code: constants.InvalidToken, MessageKey: "invalidToken", Data: data}
+	logWithLevel("warn", constants.AuthInvalidToken, msg, data)
+	return AppError{Code: constants.Unauthorized, MessageKey: "invalidToken", Data: data}
 }
 
-// ==========================
-// GENERAL ERRORS
-// ==========================
-func GeneralError(key string, data any) InternalError {
+func ExpiredError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("expired"), key)
+	logWithLevel("info", constants.AuthExpiredToken, msg, data)
+	return AppError{Code: constants.Unauthorized, MessageKey: "expired", Data: data}
+}
+
+// ===============================================
+// DATABASE & CACHE ERRORS
+// ===============================================
+func DatabaseError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("databaseError"), key)
+	logWithLevel("error", constants.DBQueryError, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "databaseError", Data: data}
+}
+
+func DuplicateKeyError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("duplicateKey"), key)
+	logWithLevel("info", constants.DBDuplicateKey, msg, data)
+	return AppError{Code: constants.Conflict, MessageKey: "duplicateKey", Data: data}
+}
+
+func CacheError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("cacheError"), key)
+	logWithLevel("error", constants.CacheReadError, msg, data)
+	return AppError{Code: constants.ServiceUnavailable, MessageKey: "cacheError", Data: data}
+}
+
+// ===============================================
+// EXTERNAL SERVICE / INTEGRATION
+// ===============================================
+func ExternalAPIError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("externalAPIError"), key)
+	logWithLevel("error", constants.ExternalAPIError, msg, data)
+	return AppError{Code: constants.BadGateway, MessageKey: "externalAPIError", Data: data}
+}
+
+func ExternalTimeoutError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("externalTimeout"), key)
+	logWithLevel("warn", constants.ExternalTimeoutError, msg, data)
+	return AppError{Code: constants.GatewayTimeout, MessageKey: "externalTimeout", Data: data}
+}
+
+func ExternalAuthError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("externalAuthError"), key)
+	logWithLevel("warn", constants.ExternalAuthError, msg, data)
+	return AppError{Code: constants.Unauthorized, MessageKey: "externalAuthError", Data: data}
+}
+
+func ExternalRateLimitError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("externalRateLimit"), key)
+	logWithLevel("warn", constants.ExternalRateLimit, msg, data)
+	return AppError{Code: constants.ServiceUnavailable, MessageKey: "externalRateLimit", Data: data}
+}
+
+// ===============================================
+// FILE & IO
+// ===============================================
+func FileNotFound(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("fileNotFound"), key)
+	logWithLevel("warn", constants.FileNotFoundError, msg, data)
+	return AppError{Code: constants.NotFound, MessageKey: "fileNotFound", Data: data}
+}
+
+func FileReadError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("fileReadError"), key)
+	logWithLevel("error", constants.FileReadError, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "fileReadError", Data: data}
+}
+
+// ===============================================
+// TIMEOUT / GENERAL
+// ===============================================
+func TimeoutError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("timeoutError"), key)
+	logWithLevel("warn", constants.TimeoutError, msg, data)
+	return AppError{Code: constants.GatewayTimeout, MessageKey: "timeoutError", Data: data}
+}
+
+func GeneralError(key string, data any) AppError {
 	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("generalRequestErrors"), key)
-	logError(constants.GeneralErrors, msg, data)
-	return InternalError{Code: constants.GeneralErrors, MessageKey: "generalRequestErrors", Data: data}
+	logWithLevel("error", constants.OperationFailed, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "generalRequestErrors", Data: data}
 }
 
-func InvalidProcess(key string, data any) InternalError {
-	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("invalidProcess"), key)
-	logError(constants.BadRequest, msg, data)
-	return InternalError{Code: constants.BadRequest, MessageKey: "invalidProcess", Data: data}
-}
-
-func UnknownError(key string, data any) InternalError {
-	msg := translator.GetMessageByLang("somethingWentWrong")
-	logError(constants.InternalServerError, msg, data)
-	return InternalError{Code: constants.InternalServerError, MessageKey: "somethingWentWrong", Data: data}
+func UnknownError(key string, data any) AppError {
+	msg := fmt.Sprintf("%s: %s", translator.GetMessageByLang("somethingWentWrong"), key)
+	logWithLevel("error", constants.UnknownError, msg, data)
+	return AppError{Code: constants.InternalServerError, MessageKey: "somethingWentWrong", Data: data}
 }

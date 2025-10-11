@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ginanjar-template-golang/shared-pkg/constants"
-	"github.com/ginanjar-template-golang/shared-pkg/errors"
+	errHandler "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
 	"github.com/ginanjar-template-golang/shared-pkg/utils"
@@ -163,7 +163,7 @@ func PaginationResponse(c *gin.Context, messageKey string, data Pagination) {
 func FromInternalError(c *gin.Context, err error) {
 	reqID := getRequestID(c)
 
-	if internalErr, ok := err.(errors.InternalError); ok {
+	if internalErr, ok := err.(errHandler.AppError); ok {
 		c.JSON(internalErr.Code, ResponseError{
 			Meta: MetaData{
 				RequestID: reqID,

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	appError "github.com/ginanjar-template-golang/shared-pkg/errors"
+	errHandler "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/middleware"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
@@ -10,9 +10,11 @@ import (
 
 func configLogger() {
 	logger.Init(logger.Config{
-		LogglyToken: "",
+		LogglyUrl:   "https://logs-01.loggly.com/inputs/%s/tag/%s",
+		LogglyToken: "", //your-loggly-token
 		LogglyTag:   "service-shared-pkg",
-		Enabled:     false,
+		Environment: "dev", // dev (TRACE,DEBUG,INFO,WARN,ERROR) | staging (TRACE,INFO,WARN,ERROR) | prod (WARN,ERROR)
+		AllLogLevel: false,
 	})
 }
 
@@ -24,6 +26,12 @@ func main() {
 	r.Use(middleware.CORS())
 	r.Use(middleware.RequestLogger())
 	r.Use(middleware.Recovery())
+
+	logger.Trace("Trace message", map[string]any{"foo": "bar"})
+	logger.Debug("Debug message", map[string]any{"foo": "bar"})
+	logger.Info("Info message", map[string]any{"foo": "bar"})
+	logger.Warn("Warning message", map[string]any{"foo": "bar"})
+	logger.Error("Error message", map[string]any{"foo": "bar"})
 
 	r.GET("/success-get", func(c *gin.Context) {
 		user := map[string]any{
@@ -74,7 +82,7 @@ func main() {
 	})
 
 	r.GET("/error", func(c *gin.Context) {
-		err := appError.ResourceNotFound("user", "error test")
+		err := errHandler.AlreadyUsedError("user", nil)
 		response.FromInternalError(c, err)
 	})
 

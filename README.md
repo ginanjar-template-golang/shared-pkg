@@ -1,16 +1,15 @@
 # Shared Package — Golang (Gin Compatible)
 
 `shared-pkg` is a **common utility library** for Golang microservices that standardizes **API responses**, **error handling**, and **internationalization (i18n)**.  
-It’s designed to be **framework-agnostic** but integrates perfectly with **Gin**.
+integrates perfectly with **Gin**.
 
 
 ## dependencies
 
 ```
-gin     -> `go get github.com/gin-gonic/gin`
-goil8n  -> `go get github.com/nicksnyder/go-i18n/v2/goi18n`
-        -> `go get golang.org/x/text`
-Zap Logger -> `go.uber.org/zap`
+gin         -> `go get github.com/gin-gonic/gin`
+goil8n      -> `go get github.com/nicksnyder/go-i18n/v2/goi18n` & `go get golang.org/x/text`
+Zap Logger  -> `go.uber.org/zap`
 ```
 
 ---
@@ -20,21 +19,37 @@ Zap Logger -> `go.uber.org/zap`
 ```
 shared-pkg/
 ├── go.mod
-├── response/
-│   ├── meta.go
-│   └── response.go
+├── constants/
+│   ├── http_code.go
+│   └── internal_code.go
+├── db/
+│   ├── translator.go
+│    └── gorm/
+│        └── repository
+│            └── base_repository.go
 ├── errors/
-│   ├── error_factory.go
-│   └── http_status_map.go
-│   └── internal_error_map.go
-│   └── static_code.go
+│   ├── errors.go
+├── logger/
+│   └── logger.go
+├── middleware/
+│   ├── auth_jwt.go
+│   ├── cors.go
+│   ├── recovery.go
+│   └── request.go
+├── response/
+│   └── response.go
 └── translator/
-    ├── translator.go
-    └── locales/
-        ├── en.json
-        └── id.json
+│   ├── translator.go
+│   └── messages/
+│       ├── errors
+│       │   ├── en.json
+│       │   └── id.json
+│       └── success
+│           ├── en.json
+│           └── id.json
 └── utils/
 │   ├── request_id.go
+│   └── sensitive_field.go
 
 ```
 
@@ -70,7 +85,21 @@ shared-pkg/
 }
 ```
 
-## Format Logger
+## Logger
+
+### Initialize Logger
+
+```
+logger.Init(logger.Config{
+		LogglyUrl:   "https://logs-01.loggly.com/inputs/%s/tag/%s",
+		LogglyToken: "", //your-loggly-token
+		LogglyTag:   "service-shared-pkg",
+		Environment: "dev", // dev (TRACE,DEBUG,INFO,WARN,ERROR) | staging (TRACE,INFO,WARN,ERROR) | prod (WARN,ERROR)
+		AllLogLevel: false,
+})
+```
+
+### Format Logger
 
 ```
 ───────────────────────────────────────────────────────────────
@@ -90,14 +119,7 @@ Data: {
 
 [ERROR] 2025-10-08T16:25:56+07:00
 RequestID: 28ec7947-9468-47a1-a6a5-e61e01036d2b
-Message: Resource tidak ditemukan: user
-Data: {
-  "error": "error test",
-  "method": "GET",
-  "path": "/error",
-  "request_id": "28ec7947-9468-47a1-a6a5-e61e01036d2b",
-  "status": 404
-}
+Message: Something Wrong
 Error: error test
 ───────────────────────────────────────────────────────────────
 ```

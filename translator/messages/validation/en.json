@@ -1,0 +1,68 @@
+{
+    "validationFailed": "Validation failed",
+    "invalidRequest": "Invalid request",
+
+    "required": "{field} is required",
+    "email": "{field} must be a valid email address",
+    "min": "{field} must be at least {param}",
+    "max": "{field} must be at most {param}",
+    "len": "{field} must be exactly {param}",
+    "gte": "{field} must be greater than or equal to {param}",
+    "lte": "{field} must be less than or equal to {param}",
+    "gt": "{field} must be greater than {param}",
+    "lt": "{field} must be less than {param}",
+    "eq": "{field} must be equal to {param}",
+    "ne": "{field} must not be equal to {param}",
+
+    "numeric": "{field} must be numeric",
+    "number": "{field} must be a valid number",
+    "alphanum": "{field} must contain only letters and numbers",
+    "alpha": "{field} must contain only letters",
+    "boolean": "{field} must be true or false",
+
+    "uuid": "{field} must be a valid UUID",
+    "uuid3": "{field} must be a valid UUID v3",
+    "uuid4": "{field} must be a valid UUID v4",
+    "uuid5": "{field} must be a valid UUID v5",
+    "url": "{field} must be a valid URL",
+    "uri": "{field} must be a valid URI",
+    "ip": "{field} must be a valid IP address",
+    "ipv4": "{field} must be a valid IPv4 address",
+    "ipv6": "{field} must be a valid IPv6 address",
+    "mac": "{field} must be a valid MAC address",
+
+    "oneof": "{field} must be one of {param}",
+    "contains": "{field} must contain '{param}'",
+    "excludes": "{field} must not contain '{param}'",
+    "startswith": "{field} must start with '{param}'",
+    "endswith": "{field} must end with '{param}'",
+    "containsany": "{field} must contain at least one of '{param}'",
+    "excludesall": "{field} must not contain any of '{param}'",
+
+    "eqfield": "{field} must be equal to {param}",
+    "nefield": "{field} must not be equal to {param}",
+    "gtefield": "{field} must be greater than or equal to {param}",
+    "ltefield": "{field} must be less than or equal to {param}",
+
+    "unique": "{field} must contain unique values",
+    "excluded_with": "{field} must be excluded when {param} is present",
+    "required_with": "{field} is required when {param} is present",
+    "required_without": "{field} is required when {param} is not present",
+
+    "base64": "{field} must be a valid Base64 string",
+    "hexadecimal": "{field} must be a valid hexadecimal string",
+    "rgb": "{field} must be a valid RGB color",
+    "rgba": "{field} must be a valid RGBA color",
+    "hsl": "{field} must be a valid HSL color",
+    "hsla": "{field} must be a valid HSLA color",
+
+    "datetime": "{field} must be a valid datetime",
+    "iso8601": "{field} must be in ISO8601 format",
+
+    "file": "{field} must be a valid file",
+    "image": "{field} must be an image",
+    "mime": "{field} must be of type {param}",
+
+    "notexample": "{field} cannot use example.com domain",
+    "strongpassword": "{field} must contain at least one uppercase letter and one number"
+}

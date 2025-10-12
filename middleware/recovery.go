@@ -21,7 +21,7 @@ func Recovery() gin.HandlerFunc {
 					internalErr = errHandler.UnknownError("panic-unknown", e)
 				}
 
-				response.FromInternalError(c, internalErr)
+				response.FromAppError(c, internalErr)
 				c.Abort()
 			}
 		}()

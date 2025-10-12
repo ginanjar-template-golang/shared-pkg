@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ginanjar-template-golang/shared-pkg/utils"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -244,4 +245,26 @@ func Trace(msg string, fields map[string]any, err ...error) {
 		fields["error"] = err[0].Error()
 	}
 	log(TraceLevel, msg, fields)
+}
+
+// ===============================================
+// LOG HELPER (LEVEL AWARE)
+// ===============================================
+func LogMapLevel(level string, internalCode int, msg string, data any, err ...error) {
+	fields := map[string]any{
+		"request_id":    utils.GetRequestID(),
+		"internal_code": internalCode,
+		"data":          data,
+	}
+
+	switch level {
+	case "debug":
+		Debug(msg, fields, err...)
+	case "info":
+		Info(msg, fields)
+	case "warn":
+		Warn(msg, fields, err...)
+	default:
+		Error(msg, fields, err...)
+	}
 }

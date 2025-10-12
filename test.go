@@ -6,6 +6,7 @@ import (
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/middleware"
 	"github.com/ginanjar-template-golang/shared-pkg/response"
+	"github.com/ginanjar-template-golang/shared-pkg/validator"
 )
 
 func configLogger() {
@@ -83,12 +84,27 @@ func main() {
 
 	r.GET("/error", func(c *gin.Context) {
 		err := errHandler.AlreadyUsedError("user", nil)
-		response.FromInternalError(c, err)
+		response.FromAppError(c, err)
 	})
 
 	// Contoh endpoint error
 	r.GET("/panic", func(c *gin.Context) {
 		panic("unexpected error example")
+	})
+
+	r.POST("/validation", func(c *gin.Context) {
+		type RegisterDto struct {
+			Username string `json:"username" validate:"required"`
+			Email    string `json:"email" validate:"required,email,notexample"`
+			Password string `json:"password" validate:"required,min=6,strongpassword"`
+		}
+
+		var params RegisterDto
+
+		if appErr := validator.ValidateRequest(c, &params); appErr != nil {
+			response.FromAppError(c, *appErr)
+			return
+		}
 	})
 
 	r.Run(":8080")

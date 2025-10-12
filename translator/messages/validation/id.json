@@ -1,0 +1,68 @@
+{
+    "validationFailed": "Validasi gagal",
+    "invalidRequest": "Permintaan tidak valid",
+
+    "required": "{field} wajib diisi",
+    "email": "{field} harus berupa alamat email yang valid",
+    "min": "{field} minimal {param}",
+    "max": "{field} maksimal {param}",
+    "len": "{field} harus memiliki panjang {param}",
+    "gte": "{field} harus lebih besar atau sama dengan {param}",
+    "lte": "{field} harus lebih kecil atau sama dengan {param}",
+    "gt": "{field} harus lebih besar dari {param}",
+    "lt": "{field} harus lebih kecil dari {param}",
+    "eq": "{field} harus sama dengan {param}",
+    "ne": "{field} tidak boleh sama dengan {param}",
+
+    "numeric": "{field} harus berupa angka",
+    "number": "{field} harus berupa angka yang valid",
+    "alphanum": "{field} hanya boleh berisi huruf dan angka",
+    "alpha": "{field} hanya boleh berisi huruf",
+    "boolean": "{field} harus bernilai benar (true) atau salah (false)",
+
+    "uuid": "{field} harus berupa UUID yang valid",
+    "uuid3": "{field} harus berupa UUID versi 3 yang valid",
+    "uuid4": "{field} harus berupa UUID versi 4 yang valid",
+    "uuid5": "{field} harus berupa UUID versi 5 yang valid",
+    "url": "{field} harus berupa URL yang valid",
+    "uri": "{field} harus berupa URI yang valid",
+    "ip": "{field} harus berupa alamat IP yang valid",
+    "ipv4": "{field} harus berupa alamat IPv4 yang valid",
+    "ipv6": "{field} harus berupa alamat IPv6 yang valid",
+    "mac": "{field} harus berupa alamat MAC yang valid",
+
+    "oneof": "{field} harus salah satu dari {param}",
+    "contains": "{field} harus mengandung '{param}'",
+    "excludes": "{field} tidak boleh mengandung '{param}'",
+    "startswith": "{field} harus diawali dengan '{param}'",
+    "endswith": "{field} harus diakhiri dengan '{param}'",
+    "containsany": "{field} harus mengandung salah satu dari '{param}'",
+    "excludesall": "{field} tidak boleh mengandung salah satu dari '{param}'",
+
+    "eqfield": "{field} harus sama dengan {param}",
+    "nefield": "{field} tidak boleh sama dengan {param}",
+    "gtefield": "{field} harus lebih besar atau sama dengan {param}",
+    "ltefield": "{field} harus lebih kecil atau sama dengan {param}",
+
+    "unique": "{field} harus berisi nilai unik",
+    "excluded_with": "{field} harus dikosongkan jika {param} diisi",
+    "required_with": "{field} wajib diisi jika {param} diisi",
+    "required_without": "{field} wajib diisi jika {param} tidak diisi",
+
+    "base64": "{field} harus berupa string Base64 yang valid",
+    "hexadecimal": "{field} harus berupa string heksadesimal yang valid",
+    "rgb": "{field} harus berupa warna RGB yang valid",
+    "rgba": "{field} harus berupa warna RGBA yang valid",
+    "hsl": "{field} harus berupa warna HSL yang valid",
+    "hsla": "{field} harus berupa warna HSLA yang valid",
+
+    "datetime": "{field} harus berupa tanggal dan waktu yang valid",
+    "iso8601": "{field} harus dalam format ISO8601",
+
+    "file": "{field} harus berupa file yang valid",
+    "image": "{field} harus berupa gambar",
+    "mime": "{field} harus memiliki tipe {param}",
+
+    "notexample": "{field} tidak boleh menggunakan domain example.com",
+    "strongpassword": "{field} harus mengandung minimal satu huruf besar dan satu angka"
+}

@@ -36,9 +36,16 @@ var enSuccessJSON []byte
 //go:embed messages/success/id.json
 var idSuccessJSON []byte
 
+// Validation
+//
+//go:embed messages/validation/en.json
+var enValidationJSON []byte
+
+//go:embed messages/validation/id.json
+var idValidationJSON []byte
+
 // ================== Helper Functions ==================
 
-// newTranslatorFromBytes membuat Translator dari JSON bytes
 func newTranslatorFromBytes(bytesList ...[]byte) *Translator {
 	messages := make(map[string]string)
 	for _, b := range bytesList {
@@ -54,19 +61,15 @@ func newTranslatorFromBytes(bytesList ...[]byte) *Translator {
 	return &Translator{messages: messages}
 }
 
-// newTranslator load semua messages untuk satu bahasa
 func newTranslator(lang string) *Translator {
 	switch strings.ToLower(lang) {
 	case "id", "id-id":
-		return newTranslatorFromBytes(idErrorsJSON, idSuccessJSON)
+		return newTranslatorFromBytes(idErrorsJSON, idSuccessJSON, idValidationJSON)
 	default:
-		return newTranslatorFromBytes(enErrorsJSON, enSuccessJSON)
+		return newTranslatorFromBytes(enErrorsJSON, enSuccessJSON, enValidationJSON)
 	}
 }
 
-// ================== Public API ==================
-
-// InitGlobalTranslator set default global translator
 func InitGlobalTranslator(lang string) {
 	t := newTranslator(lang)
 	mu.Lock()
@@ -75,7 +78,6 @@ func InitGlobalTranslator(lang string) {
 	fmt.Printf("[translator] global translator initialized with lang=%s\n", lang)
 }
 
-// GetGlobalTranslator thread-safe, fallback English
 func GetGlobalTranslator() *Translator {
 	mu.RLock()
 	defer mu.RUnlock()
@@ -92,7 +94,6 @@ func GetGlobalTranslator() *Translator {
 	return globalTranslator
 }
 
-// GetMessageGlobal ambil message dari global translator
 func GetMessageGlobal(key string) string {
 	t := GetGlobalTranslator()
 	if msg, ok := t.messages[key]; ok {
@@ -101,7 +102,6 @@ func GetMessageGlobal(key string) string {
 	return key
 }
 
-// GetMessageByLang ambil message sesuai bahasa (per request)
 func GetMessageByLang(key string, lang ...string) string {
 	selectedLang := "en"
 	if len(lang) > 0 && lang[0] != "" {

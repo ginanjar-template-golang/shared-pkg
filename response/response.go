@@ -160,7 +160,7 @@ func PaginationResponse(c *gin.Context, messageKey string, data Pagination) {
 // ========================
 // ERROR RESPONSE
 // ========================
-func FromInternalError(c *gin.Context, err error) {
+func FromAppError(c *gin.Context, err error) {
 	reqID := getRequestID(c)
 
 	if internalErr, ok := err.(errHandler.AppError); ok {

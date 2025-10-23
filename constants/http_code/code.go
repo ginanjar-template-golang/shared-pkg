@@ -1,4 +1,4 @@
-package constants
+package http_code
 
 import "net/http"
 

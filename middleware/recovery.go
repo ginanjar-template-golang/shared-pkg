@@ -2,26 +2,26 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	errHandler "github.com/ginanjar-template-golang/shared-pkg/errors"
-	"github.com/ginanjar-template-golang/shared-pkg/response"
+	appError "github.com/ginanjar-template-golang/shared-pkg/errors"
+	httpResponse "github.com/ginanjar-template-golang/shared-pkg/response/http_response"
 )
 
 func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				var internalErr errHandler.AppError
+				var internalErr appError.AppError
 
 				switch e := rec.(type) {
 				case string:
-					internalErr = errHandler.UnknownError("panic-string", e)
+					internalErr = appError.UnknownError("panic-string", e)
 				case error:
-					internalErr = errHandler.UnknownError("panic-error", e.Error())
+					internalErr = appError.UnknownError("panic-error", e.Error())
 				default:
-					internalErr = errHandler.UnknownError("panic-unknown", e)
+					internalErr = appError.UnknownError("panic-unknown", e)
 				}
 
-				response.FromAppError(c, internalErr)
+				httpResponse.FromAppError(c, internalErr)
 				c.Abort()
 			}
 		}()

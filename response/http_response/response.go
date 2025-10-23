@@ -1,11 +1,11 @@
-package response
+package http_response
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/ginanjar-template-golang/shared-pkg/constants"
+	httpCode "github.com/ginanjar-template-golang/shared-pkg/constants/http_code"
 	errHandler "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
@@ -15,14 +15,15 @@ import (
 // MetaData standard response meta
 type MetaData struct {
 	RequestID string `json:"request_id"`
-	Code      int    `json:"code"`
+	HttpCode  int    `json:"http_code"`
 	Message   string `json:"message"`
 }
 
 // Standard response format
 type Response struct {
-	Meta MetaData `json:"meta"`
-	Data any      `json:"data,omitempty"`
+	Meta       MetaData   `json:"meta"`
+	Pagination Pagination `json:"pagination,omitempty"`
+	Results    any        `json:"data,omitempty"`
 }
 
 type ResponseError struct {
@@ -36,7 +37,7 @@ type Pagination struct {
 	Size     int `json:"size"`
 	Limit    int `json:"limit"`
 	TotalRow int `json:"total_row"`
-	Results  any `json:"results"`
+	Results  any `json:"results,omitempty"`
 }
 
 // helper untuk auto-generate request_id jika belum ada
@@ -57,18 +58,19 @@ func Success(c *gin.Context, messageKey string, data any) {
 
 	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
-		"status":     http.StatusOK,
+		"status":     httpCode.SuccessOK,
 		"method":     c.Request.Method,
 		"path":       c.FullPath(),
+		"results":    data,
 	})
 
 	c.JSON(http.StatusOK, Response{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      constants.SuccessOK,
+			HttpCode:  httpCode.SuccessOK,
 			Message:   translator.GetMessageGlobal(messageKey),
 		},
-		Data: data,
+		Results: data,
 	})
 }
 
@@ -77,18 +79,19 @@ func Created(c *gin.Context, messageKey string, data any) {
 
 	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
-		"status":     http.StatusCreated,
+		"status":     httpCode.SuccessCreated,
 		"method":     c.Request.Method,
 		"path":       c.FullPath(),
+		"results":    data,
 	})
 
 	c.JSON(http.StatusCreated, Response{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      constants.SuccessCreated,
+			HttpCode:  httpCode.SuccessCreated,
 			Message:   translator.GetMessageGlobal(messageKey),
 		},
-		Data: data,
+		Results: data,
 	})
 }
 
@@ -97,18 +100,19 @@ func Updated(c *gin.Context, messageKey string, data any) {
 
 	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
-		"status":     http.StatusOK,
+		"status":     httpCode.SuccessOK,
 		"method":     c.Request.Method,
 		"path":       c.FullPath(),
+		"results":    data,
 	})
 
 	c.JSON(http.StatusOK, Response{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      constants.SuccessOK,
+			HttpCode:  httpCode.SuccessOK,
 			Message:   translator.GetMessageGlobal(messageKey),
 		},
-		Data: data,
+		Results: data,
 	})
 }
 
@@ -117,7 +121,7 @@ func Deleted(c *gin.Context, messageKey string) {
 
 	logger.Info(translator.GetMessageByLang(messageKey), map[string]any{
 		"request_id": reqID,
-		"status":     http.StatusOK,
+		"status":     httpCode.SuccessOK,
 		"method":     c.Request.Method,
 		"path":       c.FullPath(),
 	})
@@ -125,7 +129,7 @@ func Deleted(c *gin.Context, messageKey string) {
 	c.JSON(http.StatusOK, Response{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      constants.SuccessOK,
+			HttpCode:  httpCode.SuccessOK,
 			Message:   translator.GetMessageGlobal(messageKey),
 		},
 	})
@@ -142,18 +146,25 @@ func PaginationResponse(c *gin.Context, messageKey string, data Pagination) {
 		"page":       data.Page,
 		"limit":      data.Limit,
 		"total":      data.TotalRow,
-		"status":     http.StatusOK,
+		"status":     httpCode.SuccessOK,
 		"method":     c.Request.Method,
 		"path":       c.FullPath(),
+		"results":    data.Results,
 	})
 
 	c.JSON(http.StatusOK, Response{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      constants.SuccessOK,
+			HttpCode:  httpCode.SuccessOK,
 			Message:   translator.GetMessageGlobal(messageKey),
 		},
-		Data: data,
+		Pagination: Pagination{
+			Page:     data.Page,
+			Size:     data.Size,
+			Limit:    data.Limit,
+			TotalRow: data.TotalRow,
+		},
+		Results: data.Results,
 	})
 }
 
@@ -164,10 +175,10 @@ func FromAppError(c *gin.Context, err error) {
 	reqID := getRequestID(c)
 
 	if internalErr, ok := err.(errHandler.AppError); ok {
-		c.JSON(internalErr.Code, ResponseError{
+		c.JSON(internalErr.HttpCode, ResponseError{
 			Meta: MetaData{
 				RequestID: reqID,
-				Code:      internalErr.Code,
+				HttpCode:  internalErr.HttpCode,
 				Message:   translator.GetMessageGlobal(internalErr.MessageKey),
 			},
 			Error: internalErr.Data,
@@ -179,7 +190,7 @@ func FromAppError(c *gin.Context, err error) {
 	c.JSON(http.StatusInternalServerError, ResponseError{
 		Meta: MetaData{
 			RequestID: reqID,
-			Code:      http.StatusInternalServerError,
+			HttpCode:  httpCode.InternalServerError,
 			Message:   "Unexpected error",
 		},
 		Error: err.Error(),

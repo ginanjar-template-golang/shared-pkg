@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	errHandler "github.com/ginanjar-template-golang/shared-pkg/errors"
+	appError "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/middleware"
-	"github.com/ginanjar-template-golang/shared-pkg/response"
+	httpResponse "github.com/ginanjar-template-golang/shared-pkg/response/http_response"
 	"github.com/ginanjar-template-golang/shared-pkg/validator"
 )
 
@@ -19,6 +19,7 @@ func configLogger() {
 	})
 }
 
+// http test
 func main() {
 	r := gin.Default()
 
@@ -40,7 +41,7 @@ func main() {
 			"name": "john",
 		}
 
-		response.Success(c, "successGet", map[string]any{"user": user})
+		httpResponse.Success(c, "successGet", map[string]any{"user": user})
 	})
 
 	r.GET("/success-pagination", func(c *gin.Context) {
@@ -49,7 +50,7 @@ func main() {
 			"name": "john",
 		}
 
-		pagination := response.Pagination{
+		pagination := httpResponse.Pagination{
 			Page:     1,
 			Size:     10,
 			Limit:    10,
@@ -57,7 +58,7 @@ func main() {
 			Results:  users,
 		}
 
-		response.PaginationResponse(c, "successGetPagination", pagination)
+		httpResponse.PaginationResponse(c, "successGetPagination", pagination)
 	})
 
 	r.POST("/success-create", func(c *gin.Context) {
@@ -66,7 +67,7 @@ func main() {
 			"name": "john",
 		}
 
-		response.Created(c, "successCreate", user)
+		httpResponse.Created(c, "successCreate", user)
 	})
 
 	r.PATCH("/success-update", func(c *gin.Context) {
@@ -75,16 +76,16 @@ func main() {
 			"name": "john",
 		}
 
-		response.Updated(c, "successUpdate", user)
+		httpResponse.Updated(c, "successUpdate", user)
 	})
 
 	r.DELETE("/success-update", func(c *gin.Context) {
-		response.Deleted(c, "successDelete")
+		httpResponse.Deleted(c, "successDelete")
 	})
 
 	r.GET("/error", func(c *gin.Context) {
-		err := errHandler.AlreadyUsedError("user", nil)
-		response.FromAppError(c, err)
+		err := appError.AlreadyUsedError("user", nil)
+		httpResponse.FromAppError(c, err)
 	})
 
 	// Contoh endpoint error
@@ -102,10 +103,12 @@ func main() {
 		var params RegisterDto
 
 		if appErr := validator.ValidateRequest(c, &params); appErr != nil {
-			response.FromAppError(c, *appErr)
+			httpResponse.FromAppError(c, *appErr)
 			return
 		}
 	})
 
 	r.Run(":8080")
+
+	// go TestGrpcServer()
 }

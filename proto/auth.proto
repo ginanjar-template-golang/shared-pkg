@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package authpb;
+
+import "response.proto";
+
+option go_package = "github.com/ginanjar-template-golang/shared-pkg/proto/pb/authpb;authpb";
+
+service AuthService {
+    rpc Login(LoginRequest) returns (responsepb.StandardResponse);
+    rpc GetUsers(PaginationRequest) returns (responsepb.PaginationResponse);
+}
+
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message RegisterRequest {
+    string username = 1;
+    string fullname = 2;
+    string email = 3;
+    string password = 4;
+}
+
+message PaginationRequest {
+    int32 page = 1;
+    int32 limit = 2;
+}

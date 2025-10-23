@@ -1,4 +1,4 @@
-package constants
+package internal_code
 
 // ======================================================
 // Application-Level Error Codes (Internal Errors)

@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package responsepb;
+
+option go_package = "github.com/ginanjar-template-golang/shared-pkg/proto/pb/responsepb;responsepb";
+
+message Meta {
+    string request_id = 1;
+    int32 http_code = 2;
+    string message = 3;
+}
+
+message Pagination {
+    int32 page = 1;
+    int32 size = 2;
+    int32 limit = 3;
+    int32 total_row = 4;
+    bytes results = 5;
+}
+
+message StandardResponse {
+    Meta meta = 1;
+    bytes results = 2;
+}
+
+message PaginationResponse {
+    Meta meta = 1;
+    Pagination pagination = 2;
+    bytes results = 3;
+}
+
+message ErrorResponse {
+    Meta meta = 1;
+    string error = 2;
+}

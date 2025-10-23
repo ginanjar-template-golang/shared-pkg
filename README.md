@@ -123,3 +123,11 @@ Message: Something Wrong
 Error: error test
 ───────────────────────────────────────────────────────────────
 ```
+
+```
+ protoc \      
+  --proto_path=./proto \
+  --go_out=. --go_opt=module=github.com/ginanjar-template-golang/shared-pkg \
+  --go-grpc_out=. --go-grpc_opt=module=github.com/ginanjar-template-golang/shared-pkg \
+  proto/*.proto
+```

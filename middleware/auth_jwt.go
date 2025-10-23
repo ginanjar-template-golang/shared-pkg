@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
-	"github.com/ginanjar-template-golang/shared-pkg/response"
+	httpResponse "github.com/ginanjar-template-golang/shared-pkg/response/http_response"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -23,7 +23,7 @@ func AuthJWT(cfg JWTConfig) gin.HandlerFunc {
 				"path": c.Request.URL.Path,
 			})
 
-			response.FromAppError(c, errors.ValueMissMatch("Missing Authorization header", nil))
+			httpResponse.FromAppError(c, errors.ValueMissMatch("Missing Authorization header", nil))
 			c.Abort()
 			return
 		}
@@ -39,7 +39,7 @@ func AuthJWT(cfg JWTConfig) gin.HandlerFunc {
 				"path":  c.Request.URL.Path,
 			})
 
-			response.FromAppError(c, errors.InvalidTokenError("Token", err))
+			httpResponse.FromAppError(c, errors.InvalidTokenError("Token", err))
 			c.Abort()
 			return
 		}

@@ -11,7 +11,6 @@ var (
 	mu        sync.RWMutex
 )
 
-// SetRequestID menyimpan Request ID (biasanya dipanggil di middleware)
 func SetRequestID(id string) {
 	mu.Lock()
 	defer mu.Unlock()

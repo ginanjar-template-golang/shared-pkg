@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ginanjar-template-golang/shared-pkg/constants"
+	grpcCode "github.com/ginanjar-template-golang/shared-pkg/constants/grpc_code"
+	httpCode "github.com/ginanjar-template-golang/shared-pkg/constants/http_code"
+	internalCode "github.com/ginanjar-template-golang/shared-pkg/constants/internal_code"
 	appError "github.com/ginanjar-template-golang/shared-pkg/errors"
 	"github.com/ginanjar-template-golang/shared-pkg/logger"
 	"github.com/ginanjar-template-golang/shared-pkg/translator"
@@ -21,7 +23,7 @@ func Init() *validator.Validate {
 	validate = validator.New()
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-		if name == "-" {
+		if name == "-" || name == "" {
 			return fld.Name
 		}
 		return name
@@ -37,18 +39,27 @@ func GetValidator() *validator.Validate {
 }
 
 func ValidateRequest(c *gin.Context, data any) *appError.AppError {
-	v := GetValidator()
-
 	if err := c.ShouldBindJSON(data); err != nil {
 		msg := translator.GetMessageGlobal("invalidRequest")
-		logger.LogMapLevel("warn", constants.InvalidRequestData, msg, err.Error())
+		logger.LogMapLevel("warn", internalCode.InvalidRequestData, msg, err.Error())
+
 		return &appError.AppError{
-			Code:       constants.BadRequest,
+			HttpCode:   httpCode.BadRequest,
+			GrpcCode:   grpcCode.InvalidArgument,
 			MessageKey: "invalidRequest",
 			Data:       err.Error(),
 		}
 	}
 
+	return ValidateStruct(data)
+}
+
+func ValidateGrpcRequest(data any) *appError.AppError {
+	return ValidateStruct(data)
+}
+
+func ValidateStruct(data any) *appError.AppError {
+	v := GetValidator()
 	if err := v.Struct(data); err != nil {
 		errMap := make(map[string]string)
 		for _, e := range err.(validator.ValidationErrors) {
@@ -59,10 +70,11 @@ func ValidateRequest(c *gin.Context, data any) *appError.AppError {
 		}
 
 		jsonMsg, _ := json.Marshal(errMap)
-		logger.LogMapLevel("info", constants.ValidationError, translator.GetMessageGlobal("validationFailed"), jsonMsg)
+		logger.LogMapLevel("info", internalCode.ValidationError, translator.GetMessageGlobal("validationFailed"), jsonMsg)
 
 		return &appError.AppError{
-			Code:       constants.BadRequest,
+			HttpCode:   httpCode.BadRequest,
+			GrpcCode:   grpcCode.InvalidArgument,
 			MessageKey: "validationFailed",
 			Data:       errMap,
 		}
@@ -71,10 +83,12 @@ func ValidateRequest(c *gin.Context, data any) *appError.AppError {
 	return nil
 }
 
+// buildMessage constructs a user-friendly validation message.
 func buildMessage(field, tag, param string) string {
 	template := translator.GetMessageGlobal(tag)
 	c := cases.Title(language.Und)
 	fieldName := c.String(field)
+
 	template = strings.ReplaceAll(template, "{field}", fieldName)
 	template = strings.ReplaceAll(template, "{param}", param)
 	return template
